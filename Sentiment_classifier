@@ -1,0 +1,94 @@
+punctuation_chars = ["'", '"', ",", ".", "!", ":", ";", '#', '@']
+
+def strip_punctuation(stringx):
+    for char in punctuation_chars:
+        stringx = stringx.replace(char, '')
+    return stringx
+positive_words = []
+with open("positive_words.txt") as pos_f:
+    for lin in pos_f:
+        if lin[0] != ';' and lin[0] != '\n':
+            positive_words.append(lin.strip())
+
+def get_pos(stringx):
+    count = 0
+    stringx = stringx.lower()
+    stringx = strip_punctuation(stringx)
+    list_stringx = stringx.split()
+
+    for x in positive_words:
+        if x in list_stringx:
+            count += 1
+    return count
+negative_words = []
+with open("negative_words.txt") as pos_f:
+    for lin in pos_f:
+        if lin[0] != ';' and lin[0] != '\n':
+            negative_words.append(lin.strip())
+
+def get_neg(stringx):
+    count = 0
+    stringx = stringx.lower()
+    stringx = strip_punctuation(stringx)
+    list_stringx = stringx.split()
+
+    for x in negative_words:
+        if x in list_stringx:
+            count += 1
+    return count
+positive_score = []
+negative_score = []
+no_of_retweets = []
+no_of_replies = []
+net_score = []
+header = ''
+with open('project_twitter_data.csv', 'r') as md:
+    lines = md.readlines()
+    header = lines[0]
+    del lines[0]
+    for x in lines:
+        y1, y2 = 0, 0
+        replies = ''
+        retweets = ''
+        net = 0
+        # Lets find the positive and negative score
+        listx = x.split()
+        for item in listx:
+            # For Positive and Negative Score
+            y1 += get_pos(item)
+            y2 += get_neg(item)
+            
+            # For Net Scores
+            x1 = int(y1)
+            x2 = int(y2)
+            net = x1 - x2
+            
+            # For Replies
+            replies = item[-1:]
+            
+            # For Retweets
+            z = item.split(',')
+            if len(z) == 3:
+                retweets = z[1]
+            
+        positive_score.append(str(y1))
+        negative_score.append(str(y2))
+        no_of_replies.append(replies)
+        no_of_retweets.append(retweets)
+        net_score.append(str(net))
+# Just to confirm we got right values
+print(positive_score)
+print(negative_score)
+print(no_of_replies)
+print(no_of_retweets)
+print(net_score)
+['0', '2', '1', '1', '2', '2', '2', '0', '0', '4', '0', '1', '1', '1', '1', '2', '3', '2', '1']
+['0', '2', '0', '0', '0', '0', '0', '3', '2', '0', '1', '0', '0', '0', '0', '1', '0', '1', '1']
+['0', '0', '2', '1', '0', '5', '0', '0', '0', '2', '0', '0', '0', '1', '2', '0', '6', '0', '0']
+['3', '1', '1', '3', '6', '9', '19', '0', '0', '82', '0', '0', '47', '2', '0', '0', '4', '19', '0']
+['0', '0', '1', '1', '2', '2', '2', '-3', '-2', '4', '-1', '1', '1', '1', '1', '1', '3', '1', '0']
+# Now for Uploading the data on csv file
+with open('resulting_data.csv', 'w') as sd:
+    sd.write('Number of Retweets, Number of Replies, Positive Score, Negative Score, Net Score\n')
+    for i in range(len(no_of_retweets)):
+        sd.write("{},{},{},{},{}\n".format(no_of_retweets[i], no_of_replies[i], positive_score[i], negative_score[i], net_score[i]))
